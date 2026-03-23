@@ -15,9 +15,18 @@ const scrollTopBtn = document.getElementById('scrollTopBtn');
 
 let currentMode = 'browser';
 
+// Инъекция CSS для фикса скролла в Apps и правильного отображения лимитов
+const style = document.createElement('style');
+style.innerHTML = `
+    .table-panel td { padding: 12px 6px; font-size: 14px; }
+    .pill { display: inline-block; text-align: center; line-height: 1.3; }
+    .dd-item span { line-height: 1.2; }
+`;
+document.head.appendChild(style);
+
 // Загрузка данных при старте
 document.addEventListener('DOMContentLoaded', async () => {
-    statsBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px;">Загрузка данных из Google таблиц...</td></tr>`;
+    statsBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px;">Loading...</td></tr>`;
     await loadGoogleData();
 });
 
@@ -27,13 +36,13 @@ async function loadGoogleData() {
         const data = await response.json();
 
         if (data.error) {
-            statsBody.innerHTML = `<tr><td colspan="8" style="color: red; text-align: center;">Ошибка: ${data.error}</td></tr>`;
+            statsBody.innerHTML = `<tr><td colspan="8" style="color: red; text-align: center;">Error: ${data.error}</td></tr>`;
             return;
         }
 
         // Парсим данные Browser Sites
         siteData.browser = data.browserStats.slice(1).map(row => ({
-            network: row[0] || '', site: row[1] || '', game: row[2] || '', limit: row[3] || '',
+            network: String(row[0] || '').trim(), site: String(row[1] || '').trim(), game: String(row[2] || '').trim(), limit: String(row[3] || '').trim(),
             tables: String(row[4] || '').split('\n'),
             players: String(row[5] || '').split('\n'),
             time: String(row[6] || '').split('\n')
@@ -41,26 +50,29 @@ async function loadGoogleData() {
 
         // Парсим данные Apps
         siteData.apps = data.appsStats.slice(1).map(row => ({
-            app: row[0] || '', union: row[1] || '', club: row[2] || '', game: row[3] || '', limit: row[4] || '',
+            app: String(row[0] || '').trim(), union: String(row[1] || '').trim(), club: String(row[2] || '').trim(), game: String(row[3] || '').trim(), limit: String(row[4] || '').trim(),
             tables: String(row[5] || '').split('\n'),
             players: String(row[6] || '').split('\n'),
             time: String(row[7] || '').split('\n')
         }));
 
         siteData.filters = data.filters;
-        const dateRow = siteData.filters.find(row => String(row[0]).includes('Last update:'));
-        if (dateRow && dateRow[1]) {
-            const updateSpan = document.querySelector('.table-head p span');
-            if (updateSpan) updateSpan.textContent = dateRow[1];
+
+        // Достаем дату (ищем любую ячейку в первой строке, где есть дата)
+        if (siteData.filters.length > 0) {
+            const dateCell = siteData.filters[1].find(val => val && String(val).trim() !== '');
+            if (dateCell) {
+                const updateSpan = document.querySelector('.table-head p span');
+                if (updateSpan) updateSpan.textContent = dateCell;
+            }
         }
 
         buildFiltersFromData();
-
         setMode(currentMode);
-        console.log('✅ Данные успешно загружены');
+        
     } catch (error) {
         console.error('Ошибка загрузки данных:', error);
-        statsBody.innerHTML = `<tr><td colspan="8" style="color: red; text-align: center;">Ошибка сети при загрузке данных</td></tr>`;
+        statsBody.innerHTML = `<tr><td colspan="8" style="color: red; text-align: center;">Network error while loading data</td></tr>`;
     }
 }
 
@@ -95,7 +107,11 @@ function updateSummary(multi){
   if(countEl) countEl.textContent = String(selected.length);
 
   if(selected.length === 0){ summaryEl.textContent = 'All'; return; }
-  if(selected.length <= 2){ summaryEl.textContent = selected.join(', '); return; }
+  if(selected.length <= 2){ 
+      // Для красоты выводим без скобок в шапке фильтра, если там длинный лимит
+      summaryEl.textContent = selected.map(s => s.split('\n')[0]).join(', '); 
+      return; 
+  }
   summaryEl.textContent = `${selected.length} selected`;
 }
 
@@ -182,12 +198,14 @@ function getBrowserSelections(){
 
 function getAppsSelections(){
     return {
-      apps: getSelectedValuesFromBlock(filtersApps, 'appsApp'),
-      unions: getSelectedValuesFromBlock(filtersApps, 'unionsApp'),
-      games: getSelectedValuesFromBlock(filtersApps, 'gamesApp'),
-      limits: getSelectedValuesFromBlock(filtersApps, 'limitsApp')
+      apps: getSelectedValuesFromBlock(filtersApps, 'app'),
+      unions: getSelectedValuesFromBlock(filtersApps, 'union'),
+      clubs: getSelectedValuesFromBlock(filtersApps, 'clubName'),
+      games: getSelectedValuesFromBlock(filtersApps, 'gamesApps'),
+      limits: getSelectedValuesFromBlock(filtersApps, 'limitsApps'),
+      timePeaks: getSelectedValuesFromBlock(filtersApps, 'timePeakApps')
     };
-  }
+}
 
 function matchIfSelected(value, selectedArr){
   if(!selectedArr || selectedArr.length === 0) return true;
@@ -211,68 +229,75 @@ function renderHead(){
   }
 }
 
+// Рендер таблиц с учетом логики выборки времени
 function renderTable(){
   renderHead();
 
-  if(siteData.browser.length === 0 && siteData.apps.length === 0) {
-      return; // Данные еще не загрузились
-  }
+  if(siteData.browser.length === 0 && siteData.apps.length === 0) return;
 
   let rowsHtml = '';
+  const isBrowser = currentMode === 'browser';
+  const sel = isBrowser ? getBrowserSelections() : getAppsSelections();
+  const dataToFilter = isBrowser ? siteData.browser : siteData.apps;
 
-  if(currentMode === 'browser'){
-    const sel = getBrowserSelections();
-    const filtered = siteData.browser.filter(r => (
-      matchIfSelected(r.network, sel.networks) &&
-      matchIfSelected(r.site, sel.sites) &&
-      matchIfSelected(r.game, sel.games) &&
-      matchIfSelected(r.limit, sel.limits)
-    ));
+  const filtered = dataToFilter.filter(r => {
+      // Базовая фильтрация по текстовым полям
+      const textMatch = isBrowser 
+        ? (matchIfSelected(r.network, sel.networks) && matchIfSelected(r.site, sel.sites) && matchIfSelected(r.game, sel.games) && matchIfSelected(r.limit, sel.limits))
+        : (matchIfSelected(r.app, sel.apps) && matchIfSelected(r.union, sel.unions) && matchIfSelected(r.club, sel.clubs) && matchIfSelected(r.game, sel.games) && matchIfSelected(r.limit, sel.limits));
+      
+      return textMatch;
+  });
 
-    if(filtered.length === 0){
-      statsBody.innerHTML = `<tr><td colspan="7" style="color: var(--muted); text-align:center;">No results for current filters</td></tr>`;
+  if(filtered.length === 0){
+      statsBody.innerHTML = `<tr><td colspan="8" style="color: var(--muted); text-align:center;">No results for current filters</td></tr>`;
       return;
-    }
-
-    rowsHtml = filtered.map(r => `
-      <tr>
-        <td>${escapeHtml(r.network)}</td>
-        <td>${escapeHtml(r.site)}</td>
-        <td>${escapeHtml(r.game)}</td>
-        <td><span class="pill">${escapeHtml(r.limit)}</span></td>
-        <td>${buildStack(r.tables)}</td>
-        <td>${buildStack(r.players)}</td>
-        <td>${buildStack(r.time)}</td>
-      </tr>
-    `).join('');
-  } else {
-    const sel = getAppsSelections();
-    const filtered = siteData.apps.filter(r => (
-      matchIfSelected(r.app, sel.apps) &&
-      matchIfSelected(r.union, sel.unions) &&
-      matchIfSelected(r.game, sel.games) &&
-      matchIfSelected(r.limit, sel.limits)
-    ));
-
-    if(filtered.length === 0){
-        statsBody.innerHTML = `<tr><td colspan="8" style="color: var(--muted); text-align:center;">No results for current filters</td></tr>`;
-        return;
-    }
-
-    rowsHtml = filtered.map(r => `
-        <tr>
-          <td>${escapeHtml(r.app)}</td>
-          <td>${escapeHtml(r.union)}</td>
-          <td>${escapeHtml(r.club)}</td>
-          <td>${escapeHtml(r.game)}</td>
-          <td><span class="pill">${escapeHtml(r.limit)}</span></td>
-          <td>${buildStack(r.tables)}</td>
-          <td>${buildStack(r.players)}</td>
-          <td>${buildStack(r.time)}</td>
-        </tr>
-      `).join('');
   }
 
+  rowsHtml = filtered.map(r => {
+      let tLines = [], pLines = [], timeLines = [];
+      
+      // Логика фильтрации Времени (выводим только выбранные часы)
+      r.time.forEach((tStr, idx) => {
+          if(!sel.timePeaks || sel.timePeaks.length === 0 || sel.timePeaks.some(selT => tStr.includes(selT))) {
+              if (tStr.trim() !== '') {
+                  tLines.push(r.tables[idx] || '-');
+                  pLines.push(r.players[idx] || '-');
+                  timeLines.push(tStr);
+              }
+          }
+      });
+
+      // Если после фильтрации времени для этой строки не осталось данных - скрываем её
+      if(sel.timePeaks && sel.timePeaks.length > 0 && timeLines.length === 0) return '';
+
+      const limitHtml = escapeHtml(r.limit).replace(/\n/g, '<br>');
+
+      if (isBrowser) {
+          return `<tr>
+            <td>${escapeHtml(r.network)}</td>
+            <td>${escapeHtml(r.site)}</td>
+            <td>${escapeHtml(r.game)}</td>
+            <td><span class="pill">${limitHtml}</span></td>
+            <td>${buildStack(tLines)}</td>
+            <td>${buildStack(pLines)}</td>
+            <td>${buildStack(timeLines)}</td>
+          </tr>`;
+      } else {
+          return `<tr>
+            <td>${escapeHtml(r.app)}</td>
+            <td>${escapeHtml(r.union)}</td>
+            <td>${escapeHtml(r.club)}</td>
+            <td>${escapeHtml(r.game)}</td>
+            <td><span class="pill">${limitHtml}</span></td>
+            <td>${buildStack(tLines)}</td>
+            <td>${buildStack(pLines)}</td>
+            <td>${buildStack(timeLines)}</td>
+          </tr>`;
+      }
+  }).filter(Boolean).join('');
+
+  if(rowsHtml === '') rowsHtml = `<tr><td colspan="8" style="color: var(--muted); text-align:center;">No results for current filters</td></tr>`;
   statsBody.innerHTML = rowsHtml;
 }
 
@@ -289,7 +314,7 @@ document.getElementById('applyBtn').addEventListener('click', () => {
   renderTable();
 });
 
-// Мобильное меню и скролл (оставил как было)
+// Мобильное меню
 function openMenu(){ siteNav.classList.add('open'); menuToggle.classList.add('active'); menuToggle.setAttribute('aria-expanded', 'true'); document.body.classList.add('menu-open'); }
 function closeMenu(){ siteNav.classList.remove('open'); menuToggle.classList.remove('active'); menuToggle.setAttribute('aria-expanded', 'false'); document.body.classList.remove('menu-open'); }
 
@@ -303,24 +328,29 @@ if(scrollTopBtn) scrollTopBtn.addEventListener('click', () => { window.scrollTo(
 
 toggleScrollTopButton();
 
+// Кастомная сортировка чисел для лимитов
+const sortLimits = (arr) => arr.sort((a, b) => {
+    const numA = parseFloat(String(a).replace(',', '.').match(/[\d.]+/)) || 0;
+    const numB = parseFloat(String(b).replace(',', '.').match(/[\d.]+/)) || 0;
+    return numA - numB;
+});
+
 function buildFiltersFromData() {
-    // Собираем уникальные значения напрямую из боевых данных
     const filterOptions = {
         networkBrowser: [...new Set(siteData.browser.map(i => i.network))].filter(Boolean).sort(),
         sites: [...new Set(siteData.browser.map(i => i.site))].filter(Boolean).sort(),
         gamesBrowser: [...new Set(siteData.browser.map(i => i.game))].filter(Boolean).sort(),
-        limitsBrowser: [...new Set(siteData.browser.map(i => i.limit))].filter(Boolean), 
+        limitsBrowser: sortLimits([...new Set(siteData.browser.map(i => i.limit))].filter(Boolean)), 
         timePeakBrowser: [...new Set(siteData.browser.flatMap(i => i.time))].filter(Boolean),
 
         app: [...new Set(siteData.apps.map(i => i.app))].filter(Boolean).sort(),
         union: [...new Set(siteData.apps.map(i => i.union))].filter(Boolean).sort(),
         clubName: [...new Set(siteData.apps.map(i => i.club))].filter(Boolean).sort(),
         gamesApps: [...new Set(siteData.apps.map(i => i.game))].filter(Boolean).sort(),
-        limitsApps: [...new Set(siteData.apps.map(i => i.limit))].filter(Boolean),
+        limitsApps: sortLimits([...new Set(siteData.apps.map(i => i.limit))].filter(Boolean)),
         timePeakApps: [...new Set(siteData.apps.flatMap(i => i.time))].filter(Boolean)
     };
 
-    // Динамически заполняем HTML-списки фильтров
     for (const [key, values] of Object.entries(filterOptions)) {
         const multiEl = document.querySelector(`.multi[data-key="${key}"]`);
         if (!multiEl) continue;
@@ -328,12 +358,11 @@ function buildFiltersFromData() {
         const listEl = multiEl.querySelector('.dd-list');
         if (!listEl) continue;
 
-        // Рендерим чекбоксы
+        // В чекбоксах сохраняем raw-значение, а для отрисовки меняем \n на <br>
         listEl.innerHTML = values.map(val => 
-            `<label class="dd-item"><input type="checkbox" value="${escapeHtml(val)}"><span>${escapeHtml(val)}</span></label>`
+            `<label class="dd-item"><input type="checkbox" value="${escapeHtml(val)}"><span>${escapeHtml(val).replace(/\n/g, '<br>')}</span></label>`
         ).join('');
 
-        // Сразу навешиваем слушатели событий, чтобы фильтры работали
         listEl.querySelectorAll('input[type="checkbox"]').forEach(c => {
             c.addEventListener('change', () => updateSummary(multiEl));
             c.addEventListener('click', (e) => e.stopPropagation());
