@@ -2,7 +2,6 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxWkShEIzELPIOvWmeDs-ux
 
 let siteData = { browser: [], apps: [], filters: [] };
 
-// Элементы интерфейса
 const btnBrowser = document.getElementById('btnBrowser');
 const btnApps = document.getElementById('btnApps');
 const filtersBrowser = document.getElementById('filtersBrowser');
@@ -15,16 +14,17 @@ const scrollTopBtn = document.getElementById('scrollTopBtn');
 
 let currentMode = 'browser';
 
-// Инъекция CSS для фикса скролла в Apps и правильного отображения лимитов
+// Инъекция CSS для фикса скролла в Apps и принудительного переноса и выравнивания лимитов влево
 const style = document.createElement('style');
 style.innerHTML = `
-    .table-panel td { padding: 12px 6px; font-size: 14px; }
-    .pill { display: inline-block; text-align: center; line-height: 1.3; }
-    .dd-item span { line-height: 1.2; }
+    .table-panel td, .table-panel th { padding: 8px 4px !important; font-size: 12px !important; }
+    .pill { display: block !important; text-align: left !important; line-height: 1.4 !important; white-space: normal !important; padding: 4px 4px 4px 8px !important; }
+    .dd-item { align-items: flex-start !important; padding-top: 6px !important; }
+    .dd-item input { margin-top: 3px !important; }
+    .dd-item span { line-height: 1.3 !important; text-align: left !important; display: block !important; white-space: normal !important; width: 100%;}
 `;
 document.head.appendChild(style);
 
-// Загрузка данных при старте
 document.addEventListener('DOMContentLoaded', async () => {
     statsBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px;">Loading...</td></tr>`;
     await loadGoogleData();
@@ -40,30 +40,68 @@ async function loadGoogleData() {
             return;
         }
 
-        // Парсим данные Browser Sites
-        siteData.browser = data.browserStats.slice(1).map(row => ({
-            network: String(row[0] || '').trim(), site: String(row[1] || '').trim(), game: String(row[2] || '').trim(), limit: String(row[3] || '').trim(),
-            tables: String(row[4] || '').split('\n'),
-            players: String(row[5] || '').split('\n'),
-            time: String(row[6] || '').split('\n')
-        }));
-
-        // Парсим данные Apps
-        siteData.apps = data.appsStats.slice(1).map(row => ({
-            app: String(row[0] || '').trim(), union: String(row[1] || '').trim(), club: String(row[2] || '').trim(), game: String(row[3] || '').trim(), limit: String(row[4] || '').trim(),
-            tables: String(row[5] || '').split('\n'),
-            players: String(row[6] || '').split('\n'),
-            time: String(row[7] || '').split('\n')
-        }));
-
         siteData.filters = data.filters;
 
-        // Достаем дату (ищем любую ячейку в первой строке, где есть дата)
-        if (siteData.filters.length > 0) {
-            const dateCell = siteData.filters[1].find(val => val && String(val).trim() !== '');
-            if (dateCell) {
+        // Собираем словарь эталонных лимитов со скобками из вкладки Filters
+        const limitMap = {};
+        if (siteData.filters.length > 1) {
+            const headerRow = siteData.filters[1];
+            const limitCols = [];
+            headerRow.forEach((col, idx) => {
+                if (String(col).trim() === 'Limits') limitCols.push(idx);
+            });
+
+            for (let i = 2; i < siteData.filters.length; i++) {
+                const row = siteData.filters[i];
+                limitCols.forEach(colIdx => {
+                    if (row[colIdx]) {
+                        const full = String(row[colIdx]).trim();
+                        const base = full.split(' ')[0]; // берем голую цифру до пробела
+                        if (base) limitMap[base] = full;
+                    }
+                });
+            }
+        }
+
+        // Парсим Browser Sites и приклеиваем скобки из словаря
+        siteData.browser = data.browserStats.slice(1).map(row => {
+            let rawLimit = String(row[3] || '').trim();
+            return {
+                network: String(row[0] || '').trim(), site: String(row[1] || '').trim(), game: String(row[2] || '').trim(), 
+                limit: limitMap[rawLimit] || rawLimit,
+                tables: String(row[4] || '').split('\n'),
+                players: String(row[5] || '').split('\n'),
+                time: String(row[6] || '').split('\n')
+            };
+        });
+
+        // Парсим Apps и приклеиваем скобки из словаря
+        siteData.apps = data.appsStats.slice(1).map(row => {
+            let rawLimit = String(row[4] || '').trim();
+            return {
+                app: String(row[0] || '').trim(), union: String(row[1] || '').trim(), club: String(row[2] || '').trim(), game: String(row[3] || '').trim(), 
+                limit: limitMap[rawLimit] || rawLimit,
+                tables: String(row[5] || '').split('\n'),
+                players: String(row[6] || '').split('\n'),
+                time: String(row[7] || '').split('\n')
+            };
+        });
+
+        if (siteData.filters.length > 1) {
+            const headerRow = siteData.filters[0];
+            const colIdx = headerRow.findIndex(c => String(c).includes('Last update:'));
+            if (colIdx !== -1 && siteData.filters[1][colIdx]) {
                 const updateSpan = document.querySelector('.table-head p span');
-                if (updateSpan) updateSpan.textContent = dateCell;
+                if (updateSpan) {
+                    let rawDate = String(siteData.filters[1][colIdx]);
+                    if (rawDate.includes('T')) {
+                        const d = new Date(rawDate);
+                        if (!isNaN(d.getTime())) {
+                            rawDate = d.toLocaleDateString('ru-RU');
+                        }
+                    }
+                    updateSpan.textContent = rawDate;
+                }
             }
         }
 
@@ -95,7 +133,6 @@ function setMode(mode){
 btnBrowser.addEventListener('click', () => setMode('browser'));
 btnApps.addEventListener('click', () => setMode('apps'));
 
-// Утилиты для UI и фильтров
 const multis = document.querySelectorAll('.multi');
 
 function updateSummary(multi){
@@ -108,8 +145,7 @@ function updateSummary(multi){
 
   if(selected.length === 0){ summaryEl.textContent = 'All'; return; }
   if(selected.length <= 2){ 
-      // Для красоты выводим без скобок в шапке фильтра, если там длинный лимит
-      summaryEl.textContent = selected.map(s => s.split('\n')[0]).join(', '); 
+      summaryEl.textContent = selected.map(s => s.split(/\s*\(/)[0].split('\n')[0]).join(', '); 
       return; 
   }
   summaryEl.textContent = `${selected.length} selected`;
@@ -229,7 +265,6 @@ function renderHead(){
   }
 }
 
-// Рендер таблиц с учетом логики выборки времени
 function renderTable(){
   renderHead();
 
@@ -241,7 +276,6 @@ function renderTable(){
   const dataToFilter = isBrowser ? siteData.browser : siteData.apps;
 
   const filtered = dataToFilter.filter(r => {
-      // Базовая фильтрация по текстовым полям
       const textMatch = isBrowser 
         ? (matchIfSelected(r.network, sel.networks) && matchIfSelected(r.site, sel.sites) && matchIfSelected(r.game, sel.games) && matchIfSelected(r.limit, sel.limits))
         : (matchIfSelected(r.app, sel.apps) && matchIfSelected(r.union, sel.unions) && matchIfSelected(r.club, sel.clubs) && matchIfSelected(r.game, sel.games) && matchIfSelected(r.limit, sel.limits));
@@ -257,7 +291,6 @@ function renderTable(){
   rowsHtml = filtered.map(r => {
       let tLines = [], pLines = [], timeLines = [];
       
-      // Логика фильтрации Времени (выводим только выбранные часы)
       r.time.forEach((tStr, idx) => {
           if(!sel.timePeaks || sel.timePeaks.length === 0 || sel.timePeaks.some(selT => tStr.includes(selT))) {
               if (tStr.trim() !== '') {
@@ -268,10 +301,9 @@ function renderTable(){
           }
       });
 
-      // Если после фильтрации времени для этой строки не осталось данных - скрываем её
       if(sel.timePeaks && sel.timePeaks.length > 0 && timeLines.length === 0) return '';
 
-      const limitHtml = escapeHtml(r.limit).replace(/\n/g, '<br>');
+      const limitHtml = escapeHtml(r.limit).replace(/\s*\(/g, '<br>(').replace(/\n/g, '<br>');
 
       if (isBrowser) {
           return `<tr>
@@ -314,7 +346,6 @@ document.getElementById('applyBtn').addEventListener('click', () => {
   renderTable();
 });
 
-// Мобильное меню
 function openMenu(){ siteNav.classList.add('open'); menuToggle.classList.add('active'); menuToggle.setAttribute('aria-expanded', 'true'); document.body.classList.add('menu-open'); }
 function closeMenu(){ siteNav.classList.remove('open'); menuToggle.classList.remove('active'); menuToggle.setAttribute('aria-expanded', 'false'); document.body.classList.remove('menu-open'); }
 
@@ -328,7 +359,6 @@ if(scrollTopBtn) scrollTopBtn.addEventListener('click', () => { window.scrollTo(
 
 toggleScrollTopButton();
 
-// Кастомная сортировка чисел для лимитов
 const sortLimits = (arr) => arr.sort((a, b) => {
     const numA = parseFloat(String(a).replace(',', '.').match(/[\d.]+/)) || 0;
     const numB = parseFloat(String(b).replace(',', '.').match(/[\d.]+/)) || 0;
@@ -358,10 +388,10 @@ function buildFiltersFromData() {
         const listEl = multiEl.querySelector('.dd-list');
         if (!listEl) continue;
 
-        // В чекбоксах сохраняем raw-значение, а для отрисовки меняем \n на <br>
-        listEl.innerHTML = values.map(val => 
-            `<label class="dd-item"><input type="checkbox" value="${escapeHtml(val)}"><span>${escapeHtml(val).replace(/\n/g, '<br>')}</span></label>`
-        ).join('');
+        listEl.innerHTML = values.map(val => {
+            const displayVal = escapeHtml(val).replace(/\s*\(/g, '<br>(').replace(/\n/g, '<br>');
+            return `<label class="dd-item"><input type="checkbox" value="${escapeHtml(val)}"><span>${displayVal}</span></label>`;
+        }).join('');
 
         listEl.querySelectorAll('input[type="checkbox"]').forEach(c => {
             c.addEventListener('change', () => updateSummary(multiEl));
