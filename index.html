@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Poker Traffic Scan</title>
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header>
+    <div class="header-container">
+      <a href="#home" class="logo">
+        <img src="img/logo.png" alt="Poker Traffic Scan logo" class="logo-image" />
+        <span>Poker Traffic Scan</span>
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav id="siteNav">
+        <a href="#home">Home</a>
+        <a href="#how">How it works</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contacts">Contacts</a>
+      </nav>
+
+      <a class="telegram-btn" href="https://t.me/yourtelegram" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 3L3.7 10.3c-1.2.5-1.1 1.2-.2 1.5l4.6 1.4 10.7-6.7c.5-.3 1-.1.6.2l-8.7 8 0 0-.3 4.6c.4 0 .6-.2.8-.4l2.2-2.1 4.5 3.3c.8.5 1.4.2 1.6-.8L22 4.6c.2-1.2-.5-1.7-1-1.6Z" fill="currentColor"/>
+        </svg>
+        <span>Telegram</span>
+      </a>
+    </div>
+  </header>
+
+  <section class="hero" id="home">
+    <div class="container">
+      <h1>Find active poker rooms faster</h1>
+      <p>
+        Daily traffic information for poker rooms (apps and browser sites).
+        No logins, no test accounts — just filter and pick the best place to play.
+      </p>
+      <div class="glowline" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="choice">
+    <div class="container">
+      <div class="choice-inner">
+        <button id="btnBrowser" class="big-btn browser active" type="button" aria-pressed="true">
+          <h2>Browser Sites</h2>
+          <p>Web-based poker rooms traffic</p>
+        </button>
+
+        <button id="btnApps" class="big-btn apps" type="button" aria-pressed="false">
+          <h2>Apps</h2>
+          <p>Mobile app poker rooms traffic</p>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="main-wrap">
+    <div class="container">
+      <div class="main" aria-label="Traffic data">
+
+        <aside class="panel filters" aria-label="Filters">
+          <h3>Filters</h3>
+
+          <div id="filtersBrowser">
+
+            <div class="fgroup">
+              <div class="multi" data-key="networkBrowser">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Networks</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="Ipoker Network"><span>Ipoker Network</span></label>
+                    <label class="dd-item"><input type="checkbox" value="BCPoker"><span>BCPoker</span></label>
+                    <label class="dd-item"><input type="checkbox" value="WePlay"><span>WePlay</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Chico Network"><span>Chico Network</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Pacific"><span>Pacific</span></label>
+                    <label class="dd-item"><input type="checkbox" value="BetConstruct"><span>BetConstruct</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Horizon"><span>Horizon</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Winning"><span>Winning</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Party.Bwin"><span>Party.Bwin</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PokerDom"><span>PokerDom</span></label>
+                    <label class="dd-item"><input type="checkbox" value="IDN Poker"><span>IDN Poker</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Unibet"><span>Unibet</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Bodog"><span>Bodog</span></label>
+                    <label class="dd-item"><input type="checkbox" value="GG Network"><span>GG Network</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="multi" data-key="sites">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Sites</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="Сhampion poker"><span>Сhampion poker</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Bet365"><span>Bet365</span></label>
+                    <label class="dd-item"><input type="checkbox" value="RedStar"><span>RedStar</span></label>
+                    <label class="dd-item"><input type="checkbox" value="BCPoker"><span>BCPoker</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Riot.poker"><span>Riot.poker</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Tigergaming"><span>Tigergaming</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Sportsbetting"><span>Sportsbetting</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Betonline"><span>Betonline</span></label>
+                    <label class="dd-item"><input type="checkbox" value="888.com"><span>888.com</span></label>
+                    <label class="dd-item"><input type="checkbox" value="rptbet77"><span>rptbet77</span></label>
+                    <label class="dd-item"><input type="checkbox" value="JuicyStakes"><span>JuicyStakes</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PokerKing"><span>PokerKing</span></label>
+                    <label class="dd-item"><input type="checkbox" value="BlackChip Elite"><span>BlackChip Elite</span></label>
+                    <label class="dd-item"><input type="checkbox" value="ACR Elite"><span>ACR Elite</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PartyPoker"><span>PartyPoker</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Coral"><span>Coral</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PokerDom"><span>PokerDom</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Vangpoker"><span>Vangpoker</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Unibet"><span>Unibet</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Ignition"><span>Ignition</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PokerOk"><span>PokerOk</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Betkings"><span>Betkings</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Natural8"><span>Natural8</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="multi" data-key="gamesBrowser">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Type of games</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="NLH"><span>NLH</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO4"><span>PLO4</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO5"><span>PLO5</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO6"><span>PLO6</span></label>
+                    <label class="dd-item"><input type="checkbox" value="OFC"><span>OFC</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="multi" data-key="limitsBrowser">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Limits</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="2"><span>2</span></label>
+                    <label class="dd-item"><input type="checkbox" value="5"><span>5</span></label>
+                    <label class="dd-item"><input type="checkbox" value="10"><span>10</span></label>
+                    <label class="dd-item"><input type="checkbox" value="25"><span>25</span></label>
+                    <label class="dd-item"><input type="checkbox" value="50"><span>50</span></label>
+                    <label class="dd-item"><input type="checkbox" value="100"><span>100</span></label>
+                    <label class="dd-item"><input type="checkbox" value="200"><span>200</span></label>
+                    <label class="dd-item"><input type="checkbox" value="400"><span>400</span></label>
+                    <label class="dd-item"><input type="checkbox" value="600"><span>600</span></label>
+                    <label class="dd-item"><input type="checkbox" value="800"><span>800</span></label>
+                    <label class="dd-item"><input type="checkbox" value="1000"><span>1000</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="multi" data-key="timePeakBrowser">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Time peak (UTC +3)</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="Morning (8:00-12:00)"><span>Morning (8:00-12:00)</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Afternoon (12:00-17:00)"><span>Afternoon (12:00-17:00)</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Evening (17:00-21:00)"><span>Evening (17:00-21:00)</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Night (17:00-24:00)"><span>Night (17:00-24:00)</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div id="filtersApps" style="display:none;">
+
+            <div class="fgroup">
+              <div class="multi" data-key="app">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Apps</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="PokerBros"><span>PokerBros</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PPPoker"><span>PPPoker</span></label>
+                    <label class="dd-item"><input type="checkbox" value="ClubGG"><span>ClubGG</span></label>
+                    <label class="dd-item"><input type="checkbox" value="X-Poker"><span>X-Poker</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="multi" data-key="union">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Unions</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="Union A"><span>Union A</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Union B"><span>Union B</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Union C"><span>Union C</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Union D"><span>Union D</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="multi" data-key="clubName">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Clubs | IDs</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="Club Alpha"><span>Club Alpha</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Club Bravo"><span>Club Bravo</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Club Delta"><span>Club Delta</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Club Omega"><span>Club Omega</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="multi" data-key="gamesApps">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Type of games</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="NLH"><span>NLH</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO"><span>PLO</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Short Deck"><span>Short Deck</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Mixed"><span>Mixed</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="multi" data-key="limitsApps">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Limits</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="NL10"><span>NL10</span></label>
+                    <label class="dd-item"><input type="checkbox" value="NL25"><span>NL25</span></label>
+                    <label class="dd-item"><input type="checkbox" value="NL50"><span>NL50</span></label>
+                    <label class="dd-item"><input type="checkbox" value="NL100"><span>NL100</span></label>
+                    <label class="dd-item"><input type="checkbox" value="NL200"><span>NL200</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO10"><span>PLO10</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO25"><span>PLO25</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO50"><span>PLO50</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO100"><span>PLO100</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO200"><span>PLO200</span></label>
+                    <label class="dd-item"><input type="checkbox" value="PLO400"><span>PLO400</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <div class="multi" data-key="timePeakApps">
+                <button class="multi-btn" type="button">
+                  <span class="left">
+                    <span class="title">Time peak (UTC +3)</span>
+                    <span class="summary" data-summary>All</span>
+                  </span>
+                  <span class="chev">▼</span>
+                </button>
+                <div class="dropdown">
+                  <div class="dd-top">
+                    <input class="dd-search" type="search" placeholder="Search..." />
+                    <button class="dd-btn" type="button" data-action="all">All</button>
+                    <button class="dd-btn" type="button" data-action="clear">Clear</button>
+                  </div>
+                  <div class="dd-list">
+                    <label class="dd-item"><input type="checkbox" value="Morning"><span>Morning</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Afternoon"><span>Afternoon</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Evening"><span>Evening</span></label>
+                    <label class="dd-item"><input type="checkbox" value="Night"><span>Night</span></label>
+                  </div>
+                  <div class="dd-footer">
+                    <span class="muted"><span data-count>0</span> selected</span>
+                    <button class="close" type="button">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" type="button" id="applyBtn">Apply</button>
+            <button class="btn" type="button" id="resetBtn">Reset</button>
+          </div>
+        </aside>
+
+        <div class="panel table-panel" aria-label="Statistics table">
+          <div class="table-head">
+            <div>
+              <h3>Statistics</h3>
+            </div>
+            <p>Last update: <span style="color:var(--muted);">Today</span></p>
+          </div>
+
+          <div class="table-wrap" role="region" aria-label="Statistics table">
+            <table>
+              <thead>
+                <tr id="statsHeadRow"></tr>
+              </thead>
+              <tbody id="statsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section info-sections">
+    <div class="wrap container">
+
+      <div class="title" id="how">
+        <h2>How it works</h2>
+        <p>Find the best place to play in <b>3 steps</b></p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <h3 class="t1">Choose</h3>
+          <p>Select where you want to play — browse <b>websites</b> or <b>apps</b>.</p>
+        </div>
+
+        <div class="step">
+          <h3 class="t2">Filter</h3>
+          <p>Use filters to match your needs — <b>game type</b>, <b>limits</b>, and more.</p>
+        </div>
+
+        <div class="step">
+          <h3 class="t3">Explore &amp; Play</h3>
+          <p>Check activity, find the best tables, and <b>start playing instantly</b>.</p>
+        </div>
+      </div>
+
+      <div class="wave" aria-hidden="true">
+        <svg viewBox="0 0 1200 260" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <symbol id="ico-mouse" viewBox="0 0 64 64">
+              <path d="M32 10c-9 0-16 7-16 16v14c0 9 7 16 16 16s16-7 16-16V26c0-9-7-16-16-16z"
+                    fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M32 14v14" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+              <path d="M16 30h32" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+            </symbol>
+
+            <symbol id="ico-filter" viewBox="0 0 64 64">
+              <path d="M10 14h44L38 32v14l-12 6V32L10 14z"
+                    fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+              <circle cx="46" cy="46" r="8" fill="none" stroke="#fff" stroke-width="5"/>
+              <path d="M51 51l7 7" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+            </symbol>
+
+            <symbol id="ico-check" viewBox="0 0 64 64">
+              <path d="M16 34l10 10 22-24" fill="none" stroke="#fff" stroke-width="6"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+          </defs>
+
+          <path
+            d="M120 130
+               C 240 35, 360 225, 480 130
+               S 720 35, 840 130
+               S 1040 225, 1120 130"
+            fill="none"
+            stroke="var(--wave)"
+            stroke-width="40"
+            opacity="0.6"
+            stroke-linecap="round"
+          />
+
+          <circle cx="200" cy="130" r="50" fill="var(--c1)"/>
+          <circle cx="600" cy="130" r="50" fill="var(--c2)"/>
+          <circle cx="1000" cy="130" r="50" fill="var(--c3)"/>
+
+          <use href="#ico-mouse" x="168" y="98" width="64" height="64"/>
+          <use href="#ico-filter" x="568" y="98" width="64" height="64"/>
+          <use href="#ico-check" x="968" y="98" width="64" height="64"/>
+        </svg>
+      </div>
+
+      <div class="aboutWrap" id="about">
+        <div class="aboutCard">
+          <div class="aboutInner">
+            <h2 class="aboutTitle">About</h2>
+
+            <p class="aboutText">
+              We’re poker players ourselves — and we got tired of the same problem:
+              finding a good place to play often turns into a time-wasting quest.
+            </p>
+
+            <p class="aboutText">
+              You register in a room or club, log in, explore the interface —
+              and then realize there’s no real game running. No tables, no players.
+            </p>
+
+            <p class="aboutText">
+              That’s why we created this platform — to show real activity and help you
+              spend less time searching and more time playing.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq" id="faq">
+        <div class="title">
+          <h2>FAQ</h2>
+        </div>
+
+        <div class="faqList">
+          <details open>
+            <summary>
+              Is it free?
+              <span class="plus">+</span>
+            </summary>
+            <div class="faqA">
+              Yes — the platform is free to use.
+              You can browse traffic statistics, apply filters, and explore activity without registration or payment.
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              How can I know if a room/club has an active game?
+              <span class="plus">+</span>
+            </summary>
+            <div class="faqA">
+              Use the filters to choose where you want to play. After that, check the Statistics table — it shows how many active tables and players there are at different times of the day.
+              <br><br>
+              If there are no active tables, you’ll see it right away.
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              In what currency are the limits displayed?
+              <span class="plus">+</span>
+            </summary>
+            <div class="faqA">
+              All limits on the website are displayed in USD.
+              If a club uses another currency (for example BRL or INR), we convert the limits into USD and show them in a single standard format — the same applies to all rooms and clubs.
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              How up-to-date is the information on the website?
+              <span class="plus">+</span>
+            </summary>
+            <div class="faqA">
+              We update and maintain the data regularly.
+              The Statistics block shows the “Last update” time, so you can always see how fresh the information is.
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              If I have additional questions or suggestions, how can I contact you?
+              <span class="plus">+</span>
+            </summary>
+            <div class="faqA">
+              You can reach us through the Contacts section on the website.
+              We welcome feedback, suggestions, and partnership inquiries — your input helps us improve the platform and make it more useful for players.
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="contact" id="contacts">
+        <div class="title">
+          <h2>Contacts</h2>
+        </div>
+
+        <div class="contactCard">
+          <div class="contactInner">
+            <div class="contactLeft">
+              <p class="contactHeadline">Let’s talk</p>
+              <p class="contactSub">
+                Questions, feedback, partnerships, or reporting an issue — message us and we’ll respond as soon as possible.
+              </p>
+              <div class="badge247"><span class="dot"></span> Online</div>
+            </div>
+
+            <div class="contactRight">
+              <div class="cItem">
+                <div class="cIcon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path d="M21 3L3.7 10.3c-1.2.5-1.1 1.2-.2 1.5l4.6 1.4 10.7-6.7c.5-.3 1-.1.6.2l-8.7 8 0 0-.3 4.6c.4 0 .6-.2.8-.4l2.2-2.1 4.5 3.3c.8.5 1.4.2 1.6-.8L22 4.6c.2-1.2-.5-1.7-1-1.6Z" fill="currentColor"/>
+                  </svg>
+                </div>
+                <div class="cMeta">
+                  <span class="cLabel">Telegram</span>
+                  <a class="cValue" href="https://t.me/yourtelegram" target="_blank" rel="noopener">@yourtelegram</a>
+                </div>
+              </div>
+
+              <div class="cItem">
+                <div class="cIcon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path d="M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 2 8 5 8-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="cMeta">
+                  <span class="cLabel">Email</span>
+                  <a class="cValue" href="mailto:your@email.com">your@email.com</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <div class="footer-brand">
+          <img src="img/logo.png" alt="Poker Traffic Scan logo" class="logo-image footer-logo-img" />
+          <div>
+            <div class="footer-name">Poker Traffic Scan</div>
+          </div>
+        </div>
+        <div class="footer-muted">© <span id="year"></span> Poker Traffic Scan. All rights reserved.</div>
+      </div>
+
+      <div class="footer-links" aria-label="Footer links">
+        <a href="#home">Home</a>
+        <a href="#how">How it works</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contacts">Contacts</a>
+      </div>
+    </div>
+  </footer>
+
+  <button class="scroll-top" id="scrollTopBtn" type="button" aria-label="Scroll to top">
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 5l-7 7 1.4 1.4L11 8.8V20h2V8.8l4.6 4.6L19 12z" fill="currentColor"/>
+    </svg>
+  </button>
+
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('year').textContent = String(new Date().getFullYear());
+  </script>
+</body>
+</html>
