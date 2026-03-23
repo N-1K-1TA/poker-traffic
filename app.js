@@ -48,6 +48,11 @@ async function loadGoogleData() {
         }));
 
         siteData.filters = data.filters;
+        const dateRow = siteData.filters.find(row => String(row[0]).includes('Last update:'));
+        if (dateRow && dateRow[1]) {
+            const updateSpan = document.querySelector('.table-head p span');
+            if (updateSpan) updateSpan.textContent = dateRow[1];
+        }
 
         buildFiltersFromData();
 
