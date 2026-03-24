@@ -14,26 +14,24 @@ const scrollTopBtn = document.getElementById('scrollTopBtn');
 
 let currentMode = 'browser';
 
-// Инъекция CSS: Жесткая фиксация высоты в пикселях, чтобы кнопка Done НИКОГДА не уезжала за экран
+// Инъекция CSS: жесткий скролл списков и запас места снизу для нижних фильтров
 const style = document.createElement('style');
 style.innerHTML = `
     .table-panel td, .table-panel th { padding: 8px 4px !important; font-size: 12px !important; }
     .table-panel td:first-child, .table-panel th:first-child { padding-left: 16px !important; }
     .pill { display: block !important; text-align: left !important; line-height: 1.4 !important; white-space: normal !important; padding: 4px 4px 4px 8px !important; }
     .dd-item { align-items: flex-start !important; padding-top: 6px !important; }
-    .dd-item input { margin-top: 3px !important; }
+    .dd-item input { margin-top: 3px !important; flex-shrink: 0; }
     .dd-item span { line-height: 1.3 !important; text-align: left !important; display: block !important; white-space: normal !important; width: 100%; font-size: 13px !important;}
     
-    /* Безопасная высота для маленьких экранов (ноуты клиента) */
-    .dd-list { max-height: 280px !important; overflow-y: auto !important; }
+    /* Жесткое ограничение высоты для ВСЕХ списков + внутренний скролл */
+    .dd-list { max-height: 220px !important; overflow-y: auto !important; display: block !important; }
     .dd-list::-webkit-scrollbar { width: 6px; }
-    .dd-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    .dd-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
 
-    /* На больших мониторах список будет чуть длиннее, но без риска вылететь за экран */
-    @media (min-height: 850px) {
-        .dd-list { max-height: 450px !important; }
-    }
-
+    /* Искусственно удлиняем левую панель, чтобы нижние фильтры не вываливались за экран */
+    .panel.filters { padding-bottom: 300px !important; }
+    
     @media (min-width: 900px) {
         .panel.filters { max-width: 240px !important; margin-right: 20px !important; }
     }
