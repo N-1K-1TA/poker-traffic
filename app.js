@@ -14,14 +14,24 @@ const scrollTopBtn = document.getElementById('scrollTopBtn');
 
 let currentMode = 'browser';
 
-// Инъекция CSS для фикса скролла в Apps и принудительного переноса и выравнивания лимитов влево
+// Инъекция CSS: правим отступы в первом столбике и жестко фиксируем высоту дропдаунов
 const style = document.createElement('style');
 style.innerHTML = `
     .table-panel td, .table-panel th { padding: 8px 4px !important; font-size: 12px !important; }
+    .table-panel td:first-child, .table-panel th:first-child { padding-left: 16px !important; } /* Отступ для первого столбика Apps/Networks */
     .pill { display: block !important; text-align: left !important; line-height: 1.4 !important; white-space: normal !important; padding: 4px 4px 4px 8px !important; }
     .dd-item { align-items: flex-start !important; padding-top: 6px !important; }
     .dd-item input { margin-top: 3px !important; }
-    .dd-item span { line-height: 1.3 !important; text-align: left !important; display: block !important; white-space: normal !important; width: 100%;}
+    .dd-item span { line-height: 1.3 !important; text-align: left !important; display: block !important; white-space: normal !important; width: 100%; font-size: 13px !important;}
+    
+    /* Скролл внутри фильтров: делаем блок меньше, чтобы кнопки всегда были видны */
+    .dd-list { max-height: 180px !important; overflow-y: auto !important; }
+    .dd-list::-webkit-scrollbar { width: 6px; }
+    .dd-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+    @media (min-width: 900px) {
+        .panel.filters { max-width: 240px !important; margin-right: 20px !important; }
+    }
 `;
 document.head.appendChild(style);
 
@@ -42,13 +52,12 @@ async function loadGoogleData() {
 
         siteData.filters = data.filters;
 
-        // Собираем словарь эталонных лимитов со скобками из вкладки Filters
         const limitMap = {};
         if (siteData.filters.length > 1) {
             const headerRow = siteData.filters[1];
             const limitCols = [];
             headerRow.forEach((col, idx) => {
-                if (String(col).trim() === 'Limits') limitCols.push(idx);
+                if (String(col).trim().includes('Limits')) limitCols.push(idx);
             });
 
             for (let i = 2; i < siteData.filters.length; i++) {
@@ -56,31 +65,32 @@ async function loadGoogleData() {
                 limitCols.forEach(colIdx => {
                     if (row[colIdx]) {
                         const full = String(row[colIdx]).trim();
-                        const base = full.split(' ')[0]; // берем голую цифру до пробела
+                        const base = full.split(/\s*\(/)[0].trim(); 
                         if (base) limitMap[base] = full;
                     }
                 });
             }
         }
 
-        // Парсим Browser Sites и приклеиваем скобки из словаря
+        const getFullLimit = (raw) => {
+            const base = String(raw).split(/\s*\(/)[0].trim();
+            return limitMap[base] || String(raw).trim();
+        };
+
         siteData.browser = data.browserStats.slice(1).map(row => {
-            let rawLimit = String(row[3] || '').trim();
             return {
                 network: String(row[0] || '').trim(), site: String(row[1] || '').trim(), game: String(row[2] || '').trim(), 
-                limit: limitMap[rawLimit] || rawLimit,
+                limit: getFullLimit(row[3]),
                 tables: String(row[4] || '').split('\n'),
                 players: String(row[5] || '').split('\n'),
                 time: String(row[6] || '').split('\n')
             };
         });
 
-        // Парсим Apps и приклеиваем скобки из словаря
         siteData.apps = data.appsStats.slice(1).map(row => {
-            let rawLimit = String(row[4] || '').trim();
             return {
                 app: String(row[0] || '').trim(), union: String(row[1] || '').trim(), club: String(row[2] || '').trim(), game: String(row[3] || '').trim(), 
-                limit: limitMap[rawLimit] || rawLimit,
+                limit: getFullLimit(row[4]),
                 tables: String(row[5] || '').split('\n'),
                 players: String(row[6] || '').split('\n'),
                 time: String(row[7] || '').split('\n')
@@ -143,7 +153,9 @@ function updateSummary(multi){
 
   if(countEl) countEl.textContent = String(selected.length);
 
+  // Возвращаем классическое поведение: если ничего не выбрано - показываем All
   if(selected.length === 0){ summaryEl.textContent = 'All'; return; }
+  
   if(selected.length <= 2){ 
       summaryEl.textContent = selected.map(s => s.split(/\s*\(/)[0].split('\n')[0]).join(', '); 
       return; 
@@ -294,8 +306,12 @@ function renderTable(){
       r.time.forEach((tStr, idx) => {
           if(!sel.timePeaks || sel.timePeaks.length === 0 || sel.timePeaks.some(selT => tStr.includes(selT))) {
               if (tStr.trim() !== '') {
-                  tLines.push(r.tables[idx] || '-');
-                  pLines.push(r.players[idx] || '-');
+                  let tVal = (r.tables[idx] || '').trim();
+                  let pVal = (r.players[idx] || '').trim();
+                  
+                  // В таблицах оставляем тире как есть. В игроках меняем на Coming soon.
+                  tLines.push(tVal === '' ? '-' : tVal);
+                  pLines.push((pVal === '-' || pVal === '') ? 'Coming soon' : pVal);
                   timeLines.push(tStr);
               }
           }
