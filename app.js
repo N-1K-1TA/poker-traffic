@@ -14,20 +14,25 @@ const scrollTopBtn = document.getElementById('scrollTopBtn');
 
 let currentMode = 'browser';
 
-// Инъекция CSS: правим отступы в первом столбике и жестко фиксируем высоту дропдаунов
+// Инъекция CSS: Жесткая фиксация высоты в пикселях, чтобы кнопка Done НИКОГДА не уезжала за экран
 const style = document.createElement('style');
 style.innerHTML = `
     .table-panel td, .table-panel th { padding: 8px 4px !important; font-size: 12px !important; }
-    .table-panel td:first-child, .table-panel th:first-child { padding-left: 16px !important; } /* Отступ для первого столбика Apps/Networks */
+    .table-panel td:first-child, .table-panel th:first-child { padding-left: 16px !important; }
     .pill { display: block !important; text-align: left !important; line-height: 1.4 !important; white-space: normal !important; padding: 4px 4px 4px 8px !important; }
     .dd-item { align-items: flex-start !important; padding-top: 6px !important; }
     .dd-item input { margin-top: 3px !important; }
     .dd-item span { line-height: 1.3 !important; text-align: left !important; display: block !important; white-space: normal !important; width: 100%; font-size: 13px !important;}
     
-    /* Скролл внутри фильтров: делаем блок меньше, чтобы кнопки всегда были видны */
-    .dd-list { max-height: 180px !important; overflow-y: auto !important; }
+    /* Безопасная высота для маленьких экранов (ноуты клиента) */
+    .dd-list { max-height: 280px !important; overflow-y: auto !important; }
     .dd-list::-webkit-scrollbar { width: 6px; }
     .dd-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+    /* На больших мониторах список будет чуть длиннее, но без риска вылететь за экран */
+    @media (min-height: 850px) {
+        .dd-list { max-height: 450px !important; }
+    }
 
     @media (min-width: 900px) {
         .panel.filters { max-width: 240px !important; margin-right: 20px !important; }
@@ -153,7 +158,6 @@ function updateSummary(multi){
 
   if(countEl) countEl.textContent = String(selected.length);
 
-  // Возвращаем классическое поведение: если ничего не выбрано - показываем All
   if(selected.length === 0){ summaryEl.textContent = 'All'; return; }
   
   if(selected.length <= 2){ 
@@ -309,7 +313,6 @@ function renderTable(){
                   let tVal = (r.tables[idx] || '').trim();
                   let pVal = (r.players[idx] || '').trim();
                   
-                  // В таблицах оставляем тире как есть. В игроках меняем на Coming soon.
                   tLines.push(tVal === '' ? '-' : tVal);
                   pLines.push((pVal === '-' || pVal === '') ? 'Coming soon' : pVal);
                   timeLines.push(tStr);
